@@ -6,6 +6,8 @@ from django.conf import settings
 import jwt
 import datetime
 from django.contrib.auth.hashers import check_password
+from rest_framework.response import Response
+import json
 
 
 # Create your views here.
@@ -62,3 +64,14 @@ class login(APIView):
             return HttpResponse('Error occured')
         
 
+
+# function toextract user data from token
+def userInfo(request):
+    token  = request.GET.get('token')
+    decoded_token = jwt.decode(
+        token,
+        settings.SECRET_KEY,
+        algorithms=["HS256"]
+    )
+    email = decoded_token['email']
+    return HttpResponse(email)
