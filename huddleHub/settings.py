@@ -75,7 +75,6 @@ CORS_ALLOW_METHODS = [
     "OPTIONS", 
 ]
 
-CORS_REPLACE_HTTPS_REFERER = True
 
 ROOT_URLCONF = 'huddleHub.urls'
 
@@ -144,7 +143,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # STATIC_URL = 'static/'
-STATIC_URL = 'BASE_DIR / "static"'
+STATIC_URL = '/static/'
 
 
 # Default primary key field type
