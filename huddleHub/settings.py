@@ -82,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'huddleHub.wsgi.application'
+WSGI_APPLICATION = 'huddleHub.wsgi.application'
 ASGI_APPLICATION = 'huddleHub.asgi.application'
 
 # Database
