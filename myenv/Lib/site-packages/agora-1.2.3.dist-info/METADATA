@@ -1,0 +1,27 @@
+Metadata-Version: 2.1
+Name: agora
+Version: 1.2.3
+Summary: A portfolio and risk management system based on onyx.core
+Home-page: https://github.com/sbraccia/agora
+Author: carlo sbraccia
+Author-email: carlo.sbraccia@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 6 - Mature
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
+License-File: LICENSE.txt
+Requires-Dist: onyx.core
+Requires-Dist: argh
+Requires-Dist: numpy
+Requires-Dist: scipy
+
+UNKNOWN
+

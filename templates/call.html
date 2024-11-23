@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agora Video Call</title>
+    <script src="https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng"></script>
+</head>
+<body>
+    <h2>Agora Video Call</h2>
+    <div>
+        <video id="local-video" autoplay playsinline muted></video>
+        <video id="remote-video" autoplay playsinline></video>
+    </div>
+    <button onclick="startCall()">Start Call</button>
+    <script>
+        const APP_ID = "your_agora_app_id";
+        const channelName = "test_channel";
+        const uid = Math.floor(Math.random() * 1000);
+        const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+        async function startCall() {
+            const response = await fetch(`/generate_token/?channel_name=${channelName}&uid=${uid}&role=1`);
+            const data = await response.json();
+            const token = data.token;
+
+            await client.join(APP_ID, channelName, token, uid);
+
+            const localStream = await AgoraRTC.createMicrophoneAndCameraTracks();
+            const localVideo = document.getElementById("local-video");
+            localVideo.srcObject = new MediaStream([localStream[1].track]);
+            localStream[1].play("local-video");
+
+            client.on("user-published", async (user, mediaType) => {
+                await client.subscribe(user, mediaType);
+                if (mediaType === "video") {
+                    const remoteVideo = document.getElementById("remote-video");
+                    remoteVideo.srcObject = new MediaStream([user.videoTrack.track]);
+                    user.videoTrack.play("remote-video");
+                }
+            });
+
+            client.on("user-unpublished", (user) => {
+                console.log("User left", user);
+            });
+
+            await client.publish(localStream);
+        }
+    </script>
+</body>
+</html>
