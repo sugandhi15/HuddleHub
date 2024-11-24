@@ -18,3 +18,5 @@ class WebUserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])  # This hashes the password
         user.save()
         return user
+    
+
