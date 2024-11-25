@@ -216,35 +216,88 @@
         let localTrack = []
         let remoteUsers = {}
 
-        let joinAndDisplayLocalStream=async () =>{
+        let joinAndDisplayLocalStream = async () => {
             document.getElementById('room-name').innerText = CHANNEL;
-            console.log("SUCCESS");
         
-            const videoContainer = document.getElementById('video-streams');
-        
-            const agoraEngine = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+            agoraEngine = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
             agoraEngine.setClientRole("host");
         
-            const UID = Math.floor(Math.random() * 10000); 
+            const UID = Math.floor(Math.random() * 10000);
             await agoraEngine.join(APP_ID, CHANNEL, TOKEN, UID);
-            
+        
             const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
             const localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-            
+        
             await agoraEngine.publish([localAudioTrack, localVideoTrack]);
-            
+        
             const localPlayerContainer = document.createElement("div");
-            
             localPlayerContainer.id = UID;
             localPlayerContainer.textContent = "Local user " + UID;
             localPlayerContainer.style.width = "640px";
             localPlayerContainer.style.height = "480px";
-            document.body.append(localPlayerContainer);
-
+            document.getElementById('video-streams').append(localPlayerContainer);
+        
             localVideoTrack.play(localPlayerContainer);
-            console.log("publish success!");
-            
-        }
+        
+            // Listen for new users publishing streams
+            agoraEngine.on("user-published", handleUserPublished);
+            agoraEngine.on("user-unpublished", handleUserUnpublished);
+        
+            console.log("Publish success!");
+        };
+        
+        let handleUserPublished = async (user, mediaType) => {
+            remoteUsers[user.uid] = user; 
+            await subscribeToUser(user, mediaType);
+        };
+        
+        let handleUserUnpublished = (user) => {
+            console.log(`User unpublished: ${user.uid}`);
+            delete remoteUsers[user.uid];
+            const remotePlayerContainer = document.getElementById(user.uid.toString());
+            if (remotePlayerContainer) {
+                remotePlayerContainer.remove();
+            }
+        };
+        
+        let subscribeToUser = async (user, mediaType) => {
+            await agoraEngine.subscribe(user, mediaType);
+            console.log(`Subscribed to user: ${user.uid}`);
+        
+            if (mediaType === "video") {
+                const remoteVideoTrack = user.videoTrack;
+        
+                const remotePlayerContainer = document.createElement("div");
+                remotePlayerContainer.id = user.uid.toString();
+                remotePlayerContainer.textContent = "Remote user " + user.uid.toString();
+                remotePlayerContainer.style.width = "640px";
+                remotePlayerContainer.style.height = "480px";
+                document.getElementById('video-streams').append(remotePlayerContainer);
+        
+                remoteVideoTrack.play(remotePlayerContainer);
+            }
+        
+            if (mediaType === "audio") {
+                const remoteAudioTrack = user.audioTrack;
+                remoteAudioTrack.play();
+            }
+        };
+        
+        let subscribeToExistingUsers = () => {
+            agoraEngine.remoteUsers.forEach((user) => {
+                if (!remoteUsers[user.uid]) {
+                    console.log(`Subscribing to pre-existing user: ${user.uid}`);
+                    handleUserPublished(user, "video");
+                    handleUserPublished(user, "audio");
+                }
+            });
+        };
+        
+        // Retry subscribing to all remote users every 5 seconds (optional, for debugging)
+        setInterval(() => {
+            subscribeToExistingUsers();
+        }, 5000);
+
 
 
         joinAndDisplayLocalStream()
