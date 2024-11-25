@@ -39,6 +39,9 @@
 
     let handleSubmit = async (e) => {
         e.preventDefault()
+        let response = await fetch(`/get_token/?channel=${room}`)
+        let data = await response.json()
+        console.log(data)
 
         window.open('/room/', '_self')
     }

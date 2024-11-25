@@ -205,8 +205,8 @@
     
     </main>
     
-    <script type="text/javascript" src="{% static 'assets/AgoraRTC_N-4.22.2.js' %}"></script>
-
+    {% comment %} <script type="text/javascript" src="{% static 'assets/AgoraRTC_N-4.22.2.js' %}"></script> {% endcomment %}
+    <script src="https://cdn.agora.io/sdk/realtime/AgoraRTC_N-4.22.2.js"></script>
     <script>
         const APP_ID = '1aa47ae8827d40cab066b64abea5748e'
         const TOKEN = '007eJxTYFC6L2Cyrbepx0j1yg6HjU9++jgtCM6M6Jl5LVtLwlL3rrMCg2Fiool5YqqFhZF5iolBcmKSgZlZkplJYlJqoqm5iUVqXL1zekMgI4NhkgYjIwMEgvgsDL6Onn4MDAD2kx0l'
