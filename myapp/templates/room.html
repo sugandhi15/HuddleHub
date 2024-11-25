@@ -236,14 +236,14 @@
             document.getElementById('room-name').innerText = CHANNEL;
         
             agoraEngine = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-            {% comment %} agoraEngine.setClientRole("host"); {% endcomment %}
-        
-            {% comment %} const UID = Math.floor(Math.random() * 10000); {% endcomment %}
+            
             await agoraEngine.join(APP_ID, CHANNEL, TOKEN, UID);
         
             localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
             localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-        
+
+            let member = await createMember()
+
             await agoraEngine.publish([localAudioTrack, localVideoTrack]);
         
             const localPlayerContainer = document.createElement("div");
@@ -255,7 +255,6 @@
         
             localVideoTrack.play(localPlayerContainer);
         
-            // Listen for new users publishing streams
             agoraEngine.on("user-published", handleUserPublished);
             agoraEngine.on("user-unpublished", handleUserUnpublished);
         
@@ -282,10 +281,12 @@
         
             if (mediaType === "video") {
                 const remoteVideoTrack = user.videoTrack;
-        
+
+                let member = await getMember(user)
+
                 const remotePlayerContainer = document.createElement("div");
                 remotePlayerContainer.id = user.uid.toString();
-                remotePlayerContainer.textContent ="remoteUser" + user.uid.toString() ;
+                remotePlayerContainer.textContent =member.name;
                 remotePlayerContainer.style.width = "640px";
                 remotePlayerContainer.style.height = "480px";
                 document.getElementById('video-streams').append(remotePlayerContainer);
@@ -309,7 +310,6 @@
             });
         };
         
-        // Retry subscribing to all remote users every 5 seconds (optional, for debugging)
         setInterval(() => {
             subscribeToExistingUsers();
         }, 5000);
@@ -352,11 +352,44 @@
             localVideoTrack.close()
         
             await agoraEngine.leave()
-            
+
+            deleteMember()
             window.open('/', '_self')
         }
 
         document.getElementById('leave-btn').addEventListener('click', leaveAndRemoveLocalStream)
+
+
+        let createMember = async () => {
+            let response = await fetch('/create_member/', {
+                method:'POST',
+                headers: {
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify({'name':name, 'room_name':CHANNEL, 'UID':UID})
+            })
+            let member = await response.json()
+            return member
+        }
+
+        let getMember = async (user) => {
+            let response = await fetch(`/get_member/?UID=${user.uid}&room_name=${CHANNEL}`)
+            let member = await response.json()
+            return member
+        }
+
+        let deleteMember = async () => {
+            let response = await fetch('/delete_member/', {
+                method:'POST',
+                headers: {
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify({'name':name, 'room_name':CHANNEL, 'UID':UID})
+            })
+            let member = await response.json()
+        }
+
+        window.addEventListener("beforeunload",deleteMember);
 
     </script>
 </body>
