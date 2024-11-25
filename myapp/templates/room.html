@@ -217,7 +217,8 @@
     
     </main>
     
-    <script type="text/javascript" src="{% static 'assets/AgoraRTC_N-4.22.2.js' %}"></script>
+    {% comment %} <script type="text/javascript" src="{% static 'assets/AgoraRTC_N-4.22.2.js' %}"></script> {% endcomment %}
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.22.0.js"></script>
 
     <script>
         const APP_ID = '1aa47ae8827d40cab066b64abea5748e'
