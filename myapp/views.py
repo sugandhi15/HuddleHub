@@ -170,26 +170,26 @@ class setPassword(APIView):
 
 
 
-# def lobby(request):
-#     return render(request, 'lobby.html')
+def lobby(request):
+    return render(request, 'lobby.html')
 
-# def room(request):
-#     return render(request, 'room.html')
+def room(request):
+    return render(request, 'room.html')
 
 
-# def getToken(request):
-#     appId = "1aa47ae8827d40cab066b64abea5748e"
-#     appCertificate = "fe1391c6a6da4174b9f157052d61cbd0"
-#     channelName = request.GET.get('channel')
-#     uid = random.randint(1, 230)
-#     expirationTimeInSeconds = 3600
-#     currentTimeStamp = int(time.time())
-#     privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
-#     role = 1
+def getToken(request):
+    appId = "1aa47ae8827d40cab066b64abea5748e"
+    appCertificate = "fe1391c6a6da4174b9f157052d61cbd0"
+    channelName = request.GET.get('channel')
+    uid = random.randint(1, 230)
+    expirationTimeInSeconds = 3600
+    currentTimeStamp = int(time.time())
+    privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
+    role = 1
 
-#     token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
+    token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
 
-#     return JsonResponse({'token': token, 'uid': uid}, safe=False)
+    return JsonResponse({'token': token, 'uid': uid}, safe=False)
 
 
 # @csrf_exempt
