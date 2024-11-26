@@ -94,6 +94,12 @@ TEMPLATES = [
     },
 ]
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
 WSGI_APPLICATION = 'huddleHub.wsgi.application'
 ASGI_APPLICATION = 'huddleHub.asgi.application'
 

@@ -9,6 +9,7 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>MyChat</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     {% comment %} <link rel='stylesheet' type='text/css' media='screen' href="{% static 'styles/main.css' %}"> {% endcomment %}
     <style>
         /* ------------------  Global Styling ------------------ */
@@ -202,7 +203,8 @@
 
         <section id="controls-wrapper">
             <div class="icon-wrapper">
-                <img class="control-icon" id="mic-btn" style="height:40px; width : 40px" src="{% static 'images/mic-noBg.png' %}" />
+                <i id="mic-btn" style="height:40px; width : 40px ; color:black" class="fa-solid fa-microphone"></i>
+                {% comment %} <img class="control-icon" id="mic-btn" style="height:40px; width : 40px" src="{% static 'images/mic-noBg.png' %}" /> {% endcomment %}
             </div>
     
             <div class="icon-wrapper">
