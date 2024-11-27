@@ -29,6 +29,8 @@ class signup(APIView):
             first_name = request.data['first_name']
             last_name = request.data['last_name']
             email = request.data['email']
+            if WebUser.objects.get(email =email):
+                return HttpResponse("User exist with this email")
             phone_number = request.data['phone_number']
             password = request.data['password']
 
@@ -80,14 +82,19 @@ class login(APIView):
 
 # function to extract user data from token
 def userInfo(request):
-    token  = request.GET.get('token')
-    decoded_token = jwt.decode(
-        token,
-        settings.SECRET_KEY,
-        algorithms=["HS256"]
-    )
-    email = decoded_token['email']
-    return email
+    try:
+        token  = request.GET.get('token')
+        decoded_token = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=["HS256"]
+        )
+        email = decoded_token['email']
+        return email
+    except Exception as e:
+        return JsonResponse({
+            "msg":str(e)
+        })
 
 
 
@@ -100,7 +107,6 @@ class ResetPassword(APIView):
                 return Response({
                     "error": "Email is required."
             })
-            print(jwtToken)
             if not jwtToken:
                 return Response({"message":"You have to login"})
             print("success")
@@ -108,13 +114,6 @@ class ResetPassword(APIView):
             print(user)
             if not user:
                 return Response({"message":"No such user exist in database"})
-            # decoded_token = jwt.decode(
-            #     jwtToken,
-            #     settings.SECRET_KEY,
-            #     algorithms=["HS256"]
-            # )
-            # auth_email = decoded_token['email']
-            # if email == auth_email:
             token = default_token_generator.make_token(user)
             print(token)
             password_reset_link_token = f'http://localhost:8000/password/reset/{token}/{jwtToken}'
@@ -126,10 +125,6 @@ class ResetPassword(APIView):
             print("working")
             send_mail(subject, message, 'sugandhibansal26@gmail.com', [email])
             return Response({"message": "Password reset link sent."}, status=200)
-            # else:
-            #     return Response({
-            #         "message":"Please enter valid credentials"
-            #     })
         except Exception as e:
             return Response({
                 "error": str(e)
@@ -161,7 +156,6 @@ class setPassword(APIView):
             return Response({
                 "msg":str(e)
             })
-
 
 
 
