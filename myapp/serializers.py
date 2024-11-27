@@ -1,5 +1,6 @@
-from .models import WebUser
+from .models import WebUser,RoomMember
 from rest_framework import serializers
+
 
 class WebUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)  # write_only ensures that field is only write and cannot be readed
@@ -19,4 +20,9 @@ class WebUserSerializer(serializers.ModelSerializer):
         user.save()
         return user
     
+
+class RoomMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomMember
+        field = '__all__'
 

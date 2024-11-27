@@ -1,6 +1,6 @@
 from django.shortcuts import render,HttpResponse
 from rest_framework.views import APIView
-from .serializers import WebUserSerializer
+from .serializers import WebUserSerializer,RoomMemberSerializer
 from .models import WebUser
 from django.conf import settings
 import jwt
@@ -78,7 +78,7 @@ class login(APIView):
         
 
 
-# function toextract user data from token
+# function to extract user data from token
 def userInfo(request):
     token  = request.GET.get('token')
     decoded_token = jwt.decode(
@@ -186,6 +186,7 @@ def getToken(request):
     privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
     role = 1
 
+
     token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
 
     return JsonResponse({'token': token, 'uid': uid}, safe=False)
@@ -198,8 +199,8 @@ def createMember(request):
         uid=data['UID'],
         room_name=data['room_name']
     )
-
     return JsonResponse({'name':data['name']}, safe=False)
+
 
 
 def getMember(request):
@@ -212,6 +213,7 @@ def getMember(request):
     )
     name = member.name
     return JsonResponse({'name':name}, safe=False)
+
 
 
 @csrf_exempt
