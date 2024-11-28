@@ -11,27 +11,46 @@ from django.template.loader import render_to_string
 from rest_framework.response import Response
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
-
-
+from rest_framework import status
 from django.http import JsonResponse
 import random
 import time
 from agora_token_builder import RtcTokenBuilder
 from .models import RoomMember
 import json
+import random
+import string
 
 
 
 class signup(APIView):
+
+    def generate_otp(length=6, use_letters=False):
+        if use_letters:
+            characters = string.ascii_letters + string.digits  # Letters and digits
+        else:
+            characters = string.digits  # Digits only
+        
+        otp = ''.join(random.choices(characters, k=length))
+        return otp
+
+    # Example Usage
+    otp = generate_otp(length=6, use_letters=False)
+    print(f"Generated OTP: {otp}")
      
     def post(self , request):
         try:
+            # signup=signupserializer(request.data)
+            # if signup.is_valid
             first_name = request.data['first_name']
             last_name = request.data['last_name']
             email = request.data['email']
+            if WebUser.objects.filter(email = email).exists():
+                return JsonResponse({
+                    "msg":"User with this email already exist"
+                })
             phone_number = request.data['phone_number']
             password = request.data['password']
-
             data = {
                 "first_name" : first_name,
                 "last_name" : last_name,
@@ -50,10 +69,14 @@ class signup(APIView):
                 token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
                 return JsonResponse({
                     "msg":token
-                })
+                },status=status.HTTP_201_CREATED)
+            else:
+                return JsonResponse({"msg" : "Enter valid data"})
             
         except Exception as e:
-            return HttpResponse(str(e))
+            return JsonResponse({
+                "msg" : "Please Enter valid data"
+            })
         
 
 

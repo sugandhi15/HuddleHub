@@ -37,6 +37,11 @@
 <script>
     let form = document.getElementById('form')
 
+    let joinMeeting = async (e) =>{
+        room = code()
+        handleSubmit()
+    }
+
     let handleSubmit = async (e) => {
         e.preventDefault()
         let room = e.target.room.value.toUpperCase()
@@ -55,6 +60,8 @@
 
         window.open('/room/', '_self')
     }
+
+    
 
 
     form.addEventListener('submit', handleSubmit)

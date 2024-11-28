@@ -24,5 +24,10 @@ class WebUserSerializer(serializers.ModelSerializer):
 class RoomMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomMember
-        field = '__all__'
+        field = []
+
+# class signupserializer(serializers.Serializer):
+#     first_name=serializers.CharField()
+#     last_name=serializers.CharField()
+#     email=
 
