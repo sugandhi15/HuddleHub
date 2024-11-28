@@ -47,9 +47,8 @@ class signup(APIView):
                 return HttpResponse("user created succesfully")
             
         except Exception as e:
-            return HttpResponse("Please Enter Valid Credentials")
+            return HttpResponse(str(e))
         
-
 
 
 
