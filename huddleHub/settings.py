@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'myapp',
     'channels',
+    'rest_framework',
     'agora',
     "corsheaders",
 ]
