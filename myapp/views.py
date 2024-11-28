@@ -42,8 +42,14 @@ class signup(APIView):
             serilizer = WebUserSerializer(data = data)
             if serilizer.is_valid():
                 serilizer.save()
+                payload = {
+                    "email": email,
+                    "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1), 
+                    "iat": datetime.datetime.utcnow(), 
+                }
+                token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
                 return JsonResponse({
-                    "msg":"User created successfully"
+                    "msg":token
                 })
             
         except Exception as e:
