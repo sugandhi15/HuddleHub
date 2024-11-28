@@ -180,10 +180,10 @@ def getToken(request):
     privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
     role = 1
 
-
     token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
 
     return JsonResponse({'token': token, 'uid': uid}, safe=False)
+
 
 @csrf_exempt
 def createMember(request):
