@@ -29,8 +29,6 @@ class signup(APIView):
             first_name = request.data['first_name']
             last_name = request.data['last_name']
             email = request.data['email']
-            if WebUser.objects.get(email =email):
-                return HttpResponse("User exist with this email")
             phone_number = request.data['phone_number']
             password = request.data['password']
 
@@ -44,7 +42,9 @@ class signup(APIView):
             serilizer = WebUserSerializer(data = data)
             if serilizer.is_valid():
                 serilizer.save()
-                return HttpResponse("user created succesfully")
+                return JsonResponse({
+                    "msg":"User created successfully"
+                })
             
         except Exception as e:
             return HttpResponse(str(e))
