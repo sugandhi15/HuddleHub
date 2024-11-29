@@ -25,18 +25,7 @@ import string
 
 class signup(APIView):
 
-    def generate_otp(length=6, use_letters=False):
-        if use_letters:
-            characters = string.ascii_letters + string.digits  # Letters and digits
-        else:
-            characters = string.digits  # Digits only
-        
-        otp = ''.join(random.choices(characters, k=length))
-        return otp
-
-    # Example Usage
-    otp = generate_otp(length=6, use_letters=False)
-    print(f"Generated OTP: {otp}")
+    
      
     def post(self , request):
         try:
@@ -71,14 +60,13 @@ class signup(APIView):
                     "msg":token
                 },status=status.HTTP_201_CREATED)
             else:
-                return JsonResponse({"msg" : "Enter valid data"})
+                return JsonResponse({"msg" : "Please enter valid credentials"})
             
         except Exception as e:
             return JsonResponse({
-                "msg" : "Please Enter valid data"
+                "msg" : "Please enter valid credentials"
             })
         
-
 
 
 class login(APIView):
@@ -89,7 +77,7 @@ class login(APIView):
             password = request.data['password']
             user = WebUser.objects.get(email = email)
             if not user:
-                return HttpResponse("No user exist with this email")
+                return JsonResponse({"error" : "No user exist with this email"})
             if check_password(password,user.password):
                 payload = {
                     "email": email,
@@ -99,12 +87,18 @@ class login(APIView):
                 token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
                 response=Response({"jwt_token":token})
                 response.set_cookie(key='jwt_token',value=token)
-                resp = f"token = {token}"
-                return HttpResponse(resp)
+                # resp = f"token = {token}"
+                return JsonResponse({
+                    "msg":token
+                }, status=status.HTTP_200_OK)
             else:
-                return HttpResponse("Please enter valid password")
+                return JsonResponse({
+                "error" : "Please enter valid credentials"
+                }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return HttpResponse('Error occured')
+            return JsonResponse({
+                "error" : "Please enter valid credentials"
+            }, status=status.HTTP_400_BAD_REQUEST)
         
 
 
@@ -121,8 +115,67 @@ def userInfo(request):
         return email
     except Exception as e:
         return JsonResponse({
-            "msg":str(e)
-        })
+            "error":"Please enter valid credentials"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ForgetPassword(APIView):
+
+    def post(self,request):
+        try:
+            email = request.data.get('email')
+            if not email:
+                return JsonResponse({
+                    "error": "Email is required."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            if WebUser.objects.filter(email = email).exists():
+                user = WebUser.objects.get(email= email)
+                encoded_info = email.encode('utf-8').hex()
+                token = default_token_generator.make_token(user)
+                password_reset_link_token = f'http://localhost:8000/setnewpass/{token}/{encoded_info}'
+                subject = "Password Reset Requested"
+                message = render_to_string('reset.html', {
+                    'password_reset_link_token':password_reset_link_token,
+                    'username': user.first_name,
+                })
+                send_mail(subject, message, 'sugandhibansal26@gmail.com', [email])
+                return JsonResponse({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
+            else:
+                return JsonResponse({"error":"Please enter valid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({
+                "error": "Please enter valid credentials"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class newPassword(APIView):
+
+    def post(self,request,token,encoded_info):
+        try:
+            new_password = request.data.get('password')
+            if not new_password:
+                return JsonResponse({'error': 'Password is required'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                email = bytes.fromhex(encoded_info).decode('utf-8')
+            except ValueError:
+                return JsonResponse({'error': 'Sorry u cannot access this page'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                user = WebUser.objects.get(email=email)
+            except WebUser.DoesNotExist:
+                return JsonResponse({'error': 'User does not exist'}, status=404)
+            if default_token_generator.check_token(user, token):
+                user.set_password(new_password) 
+                user.save()  
+                return JsonResponse({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+            return JsonResponse({
+                "error":"Please enter a valid credentials"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return JsonResponse({
+                "error":str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -132,32 +185,30 @@ class ResetPassword(APIView):
         try:
             email = request.data.get('email')
             if not email:
-                return Response({
+                return JsonResponse({
                     "error": "Email is required."
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
             if not jwtToken:
-                return Response({"message":"You have to login"})
+                return JsonResponse({"error":"You have to login"}, status=status.HTTP_400_BAD_REQUEST)
             print("success")
             user = WebUser.objects.get(email= email)
-            print(user)
             if not user:
-                return Response({"message":"No such user exist in database"})
+                return JsonResponse({"error":"No such user exist in database"}, status=status.HTTP_400_BAD_REQUEST)
             token = default_token_generator.make_token(user)
-            print(token)
             password_reset_link_token = f'http://localhost:8000/password/reset/{token}/{jwtToken}'
             subject = "Password Reset Requested"
             message = render_to_string('reset.html', {
                 'password_reset_link_token':password_reset_link_token,
                 'username': user.first_name,
             })
-            print("working")
             send_mail(subject, message, 'sugandhibansal26@gmail.com', [email])
-            return Response({"message": "Password reset link sent."}, status=200)
+            return JsonResponse({"message": "Password reset link sent."}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({
-                "error": str(e)
-            })
+            return JsonResponse({
+                "error": "Please enter valid credentials"
+            }, status=status.HTTP_400_BAD_REQUEST)
         
+
 
 class setPassword(APIView):
 
@@ -176,15 +227,14 @@ class setPassword(APIView):
             if default_token_generator.check_token(user, token):
                 user.set_password(new_password) 
                 user.save()  
-                return Response({'message': 'Password updated successfully'})
-            return Response({
-                "msg":"Please enter a valid credentials"
-            })
+                return JsonResponse({'message': 'Password updated successfully'}, status=status.HTTP_200_OK)
+            return JsonResponse({
+                "error":"Please enter a valid credentials"
+            }, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({
-                "msg":str(e)
-            })
-
+            return JsonResponse({
+                "error":"Please enter a valid credentials"
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -215,13 +265,16 @@ def getToken(request):
 
 @csrf_exempt
 def createMember(request):
-    data = json.loads(request.body)
-    member, created = RoomMember.objects.get_or_create(
-        name=data['name'],
-        uid=data['UID'],
-        room_name=data['room_name']
-    )
-    return JsonResponse({'name':data['name']}, safe=False)
+    try:
+        data = json.loads(request.body)
+        member, created = RoomMember.objects.get_or_create(
+            name=data['name'],
+            uid=data['UID'],
+            room_name=data['room_name']
+        )
+        return JsonResponse({'name':data['name']}, safe=False)
+    except Exception as e:
+        return JsonResponse("Sorry , you cannot access this page")
 
 
 
@@ -238,6 +291,20 @@ def getMember(request):
 
 
 
+class getRoomMember(APIView):
+
+    def get(request,room_name):
+        try:
+            data = RoomMember.objects.filter(room_name = room_name)
+            if not data:
+                return JsonResponse({"msg":"Sorry cannot get data"})
+            serializer = RoomMemberSerializer(data, many=True)
+            return JsonResponse({"users" : serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({"msg":"Sorry cannot get data"})
+
+
+
 @csrf_exempt
 def deleteMember(request):
     try:
@@ -250,5 +317,5 @@ def deleteMember(request):
         member.delete()
         return JsonResponse('Member deleted', safe=False)
     except Exception as e:
-        return HttpResponse("Error occured")
+        return JsonResponse({"msg":"Please enter valid credentials"})
 
