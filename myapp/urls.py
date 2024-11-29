@@ -10,9 +10,9 @@ urlpatterns = [
     path('setnewpass/<str:token>/<str:encoded_info>',views.newPassword.as_view()),
     path('', views.lobby),
     path('room/', views.room),
-    path('get_token/', views.getToken),
+    path('get_token/<str:jwtToken>/', views.getToken),
     path('create_member/', views.createMember),
-    path('get_all_members/',views.getRoomMember.as_view()),
+    path('participants/<str:room_name>',views.getRoomMember.as_view()),
     path('get_member/', views.getMember),
     path('delete_member/', views.deleteMember),
 ]

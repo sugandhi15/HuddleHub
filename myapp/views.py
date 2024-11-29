@@ -248,19 +248,31 @@ def room(request):
     return render(request, 'room.html')
 
 
-def getToken(request):
-    appId = "1aa47ae8827d40cab066b64abea5748e"
-    appCertificate = "fe1391c6a6da4174b9f157052d61cbd0"
-    channelName = request.GET.get('channel')
-    uid = random.randint(1, 230)
-    expirationTimeInSeconds = 3600
-    currentTimeStamp = int(time.time())
-    privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
-    role = 1
+def getToken(request,jwtToken):
+    try:
+        decoded_token = jwt.decode(
+                    jwtToken,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+        email = decoded_token['email']
+        if WebUser.objects.filter(email = email).exists():
+            appId = "1aa47ae8827d40cab066b64abea5748e"
+            appCertificate = "fe1391c6a6da4174b9f157052d61cbd0"
+            channelName = request.GET.get('channel')
+            uid = random.randint(1, 230)
+            expirationTimeInSeconds = 3600
+            currentTimeStamp = int(time.time())
+            privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
+            role = 1
 
-    token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
+            token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
 
-    return JsonResponse({'token': token, 'uid': uid}, safe=False)
+            return JsonResponse({'token': token, 'uid': uid}, safe=False)
+        else:
+            return JsonResponse({"error":"Sorry,accesss denied"})
+    except Exception as e:
+        return JsonResponse({"msg":str(e)})
 
 
 @csrf_exempt
@@ -296,12 +308,12 @@ class getRoomMember(APIView):
     def get(request,room_name):
         try:
             data = RoomMember.objects.filter(room_name = room_name)
-            if not data:
-                return JsonResponse({"msg":"Sorry cannot get data"})
+            # if not data:
+            #     return JsonResponse({"msg":"Sorry cannot get data"})
             serializer = RoomMemberSerializer(data, many=True)
             return JsonResponse({"users" : serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
-            return JsonResponse({"msg":"Sorry cannot get data"})
+            return JsonResponse({"msg":str(e)})
 
 
 
