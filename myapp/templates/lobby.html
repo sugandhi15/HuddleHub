@@ -47,7 +47,8 @@
         let room = e.target.room.value.toUpperCase()
         let name = e.target.name.value
 
-        let response = await fetch(`/get_token/?channel=${room}`)
+        {% comment %} let response = await fetch(`/get_token/?channel=${room}`) {% endcomment %}
+        let response = await fetch(`/get_token_unauth/?channel=${room}`)
         let data = await response.json()
 
         let UID = data.uid

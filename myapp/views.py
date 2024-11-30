@@ -273,6 +273,25 @@ def getToken(request,jwtToken):
             return JsonResponse({"error":"Sorry,accesss denied"})
     except Exception as e:
         return JsonResponse({"msg":str(e)})
+    
+
+
+def unauthgetToken(request):
+    try:
+        appId = "1aa47ae8827d40cab066b64abea5748e"
+        appCertificate = "fe1391c6a6da4174b9f157052d61cbd0"
+        channelName = request.GET.get('channel')
+        uid = random.randint(1, 230)
+        expirationTimeInSeconds = 3600
+        currentTimeStamp = int(time.time())
+        privilegeExpiredTs = currentTimeStamp + expirationTimeInSeconds
+        role = 1
+
+        token = RtcTokenBuilder.buildTokenWithUid(appId, appCertificate, channelName, uid, role, privilegeExpiredTs)
+
+        return JsonResponse({'token': token, 'uid': uid}, safe=False)
+    except Exception as e:
+        return JsonResponse({"msg":str(e)})
 
 
 @csrf_exempt
@@ -305,15 +324,19 @@ def getMember(request):
 
 class getRoomMember(APIView):
 
-    def get(request,room_name):
+    def get(self,request,room_name):
         try:
-            data = RoomMember.objects.filter(room_name = room_name)
-            # if not data:
-            #     return JsonResponse({"msg":"Sorry cannot get data"})
+            data = RoomMember.objects.filter(room_name=room_name)
+            
+            if not data.exists():
+                return JsonResponse({"msg": "No members found for the given room name"}, status=status.HTTP_404_NOT_FOUND)
+            
             serializer = RoomMemberSerializer(data, many=True)
-            return JsonResponse({"users" : serializer.data}, status=status.HTTP_200_OK)
+            
+            return JsonResponse({"users": serializer.data}, status=status.HTTP_200_OK)
+        
         except Exception as e:
-            return JsonResponse({"msg":str(e)})
+            return JsonResponse({"msg": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -331,3 +354,20 @@ def deleteMember(request):
     except Exception as e:
         return JsonResponse({"msg":"Please enter valid credentials"})
 
+
+class userProfile(APIView):
+
+    def get(self,request,jwtToken):
+        try:
+            decoded_token = jwt.decode(
+                    jwtToken,
+                    settings.SECRET_KEY,
+                    algorithms=["HS256"]
+                )
+            email = decoded_token['email']
+            if WebUser.objects.filter(email = email):
+                user = WebUser.objects.get(email = email)
+                serializer = WebUserSerializer(user)
+                return JsonResponse({"User Info" : serializer.data})
+        except Exception as e:
+            return JsonResponse({"error" : str(e)})

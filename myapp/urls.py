@@ -11,8 +11,10 @@ urlpatterns = [
     path('', views.lobby),
     path('room/', views.room),
     path('get_token/<str:jwtToken>/', views.getToken),
+    path('get_token_unauth/', views.unauthgetToken),
     path('create_member/', views.createMember),
     path('participants/<str:room_name>',views.getRoomMember.as_view()),
     path('get_member/', views.getMember),
     path('delete_member/', views.deleteMember),
+    path('user_profile/<str:jwtToken>/',views.userProfile.as_view()),
 ]
